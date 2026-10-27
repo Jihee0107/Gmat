@@ -211,6 +211,7 @@ input[type=range]{width:100%;accent-color:var(--brown-deep);height:28px;margin:0
 .dotpick.off::after{content:'점';position:absolute;inset:0;display:grid;place-items:center;border:1px dashed var(--wood);border-radius:12px;background:#fff;font-size:13px;font-weight:700;color:var(--muted);pointer-events:none}
 .dotx{position:absolute;top:-7px;right:-7px;width:20px;height:20px;padding:0;border:2px solid #fff;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;line-height:15px;cursor:pointer}
 .dotpick.off .dotx{display:none}
+.rng-out{flex:none;min-width:44px;text-align:right;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .tagdel{width:34px;height:34px;border:0;border-radius:8px;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
 .tagdel:hover{background:var(--sand);color:var(--bad)}
 .addtag{justify-self:start;margin:-2px 0 0 78px;font-weight:700;text-decoration:none;color:var(--ok)}
@@ -428,6 +429,10 @@ input[type=range]{width:100%;accent-color:var(--brown-deep);height:28px;margin:0
         <div id=&quot;tagRows&quot;></div>
         <button type=&quot;button&quot; class=&quot;link addtag&quot; id=&quot;tagAdd&quot;>+ 태그 추가</button>
         <div class=&quot;irow&quot;>
+          <label class=&quot;lab&quot; for=&quot;dotSize&quot;>점 크기</label>
+          <div class=&quot;inline&quot;><input type=&quot;range&quot; id=&quot;dotSize&quot; name=&quot;dotSize&quot; min=&quot;50&quot; max=&quot;200&quot; step=&quot;5&quot;><output class=&quot;rng-out&quot; id=&quot;dotSizeOut&quot;></output></div>
+        </div>
+        <div class=&quot;irow&quot;>
           <label class=&quot;lab&quot; for=&quot;note&quot;>한 줄 문구</label>
           <input class=&quot;field&quot; id=&quot;note&quot; name=&quot;note&quot; placeholder=&quot;예) 아이 방까지 안심 시공&quot; autocomplete=&quot;off&quot;>
         </div>
@@ -619,7 +624,7 @@ const LOGO_DEFAULTS = {pos:'br', size:28, margin:2, opacity:100, tint:'orig', ti
 // dot · matDot · tagDots: 컬러·매트·태그 앞 점 색 ('' = 점 없음, tagDots는 tags와 같은 순서)
 // (tags·tagDots는 바꿀 때 항상 새 배열로 — 기본값 배열을 같이 쓰므로)
 const THUMB_DEFAULTS = {tpl:'card', textPos:'top', cardH:0, shape:'square', tags:[], tagDots:[], note:'', cardColor:'#FFFDF8', cardAlpha:82, frameColor:'#F7F3EC', frameAlpha:80,
-  titleFont:'notoserif', bodyFont:'pretendard', mat:'', matDot:'', color:'', dot:'#F6F3EE', brush:90, blurAmt:60};
+  titleFont:'notoserif', bodyFont:'pretendard', mat:'', matDot:'', color:'', dot:'#F6F3EE', dotSize:100, brush:90, blurAmt:60};
 
 /* ---------- 브랜드: 로고 + 로고 설정 + 썸네일 설정을 브랜드마다 저장 ---------- */
 const Brand = (() => {
@@ -1347,9 +1352,10 @@ const ThumbTool = (() => {
     }
     return s;
   }
+  const dotK = () => (th.dotSize || 100) / 100;   // 점 크기 (매트·컬러·태그 점 모두 같이)
   function pillW(text, o){
     ctx.font = bodyFont('b', o.fs);
-    return ctx.measureText(text).width + o.px * 2 + (o.dot ? o.fs * .62 + 10 : 0);
+    return ctx.measureText(text).width + o.px * 2 + (o.dot ? o.fs * .62 * dotK() + 10 : 0);
   }
   function pill(x, y, text, o){
     const w = pillW(text, o);
@@ -1358,7 +1364,7 @@ const ThumbTool = (() => {
     if (o.stroke){ ctx.strokeStyle = o.stroke; ctx.lineWidth = 2; ctx.stroke(); }
     let tx = x + o.px;
     if (o.dot){
-      const r = o.fs * .31;
+      const r = o.fs * .31 * dotK();
       ctx.beginPath(); ctx.arc(tx + r, y + o.h / 2, r, 0, Math.PI * 2);
       ctx.fillStyle = o.dot; ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,.2)'; ctx.lineWidth = 2; ctx.stroke();
@@ -1974,6 +1980,7 @@ const ThumbTool = (() => {
     $('#blurAmtOut').textContent = th.blurAmt + '%';
     $('#cardAlphaOut').textContent = th.cardAlpha + '%';
     $('#cardHOut').textContent = th.cardH ? th.cardH + '%' : '글에 맞춤';
+    $('#dotSizeOut').textContent = th.dotSize + '%';
     $('#frameAlphaOut').textContent = th.frameAlpha + '%';
     $('#cardColorRow').hidden = $('#cardAlphaRow').hidden = $('#cardHRow').hidden = th.tpl !== 'card';
     $('#frameColorRow').hidden = $('#frameAlphaRow').hidden = th.tpl !== 'frame';
